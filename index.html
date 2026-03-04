@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Editor Pro | ITAY / איתי</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --accent: #f43f5e;
+            --instagram: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        }
+        body {
+            font-family: 'Assistant', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            overflow-x: hidden;
+            /* No smooth scroll */
+        }
+        .glass {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+        }
+        
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            background: #000;
+            overflow: hidden;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .shorts-ratio {
+            padding-top: 177.77%; /* 9:16 ratio */
+            max-width: 320px;
+            margin: 0 auto;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        .float-anim { animation: float 6s ease-in-out infinite; }
+
+        /* Tabs Logic - No animations for instant appearance */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block; /* Removed fadeIn animation for instant appearance */
+        }
+        
+        .tab-btn.active {
+            background: white;
+            color: #020617;
+        }
+
+        .faq-details[open] .faq-summary svg {
+            transform: rotate(180deg);
+            color: #6366f1;
+        }
+        .faq-summary {
+            list-style: none;
+            cursor: pointer;
+        }
+        .faq-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            padding-top: 10px;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .instagram-bg {
+            background: var(--instagram);
+        }
+
+        .ig-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 99;
+            width: 56px;
+            height: 56px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--instagram);
+            box-shadow: 0 10px 25px rgba(220, 39, 67, 0.4);
+            transition: transform 0.3s;
+        }
+        
+        @media (min-width: 768px) {
+            .ig-float {
+                display: flex;
+            }
+        }
+
+        .ig-float:hover {
+            transform: scale(1.1);
+        }
+        .ig-float svg {
+            color: white;
+            width: 28px;
+            height: 28px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- כפתור אינסטגרם צף -->
+    <a href="https://www.instagram.com/itaybachinsky/" target="_blank" class="ig-float" title="עקבו אחרי באינסטגרם">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+    </a>
+
+    <!-- תפריט ניווט -->
+    <nav class="fixed w-full z-[100] px-6 py-4" id="navbar">
+        <div class="max-w-7xl mx-auto flex justify-between items-center glass rounded-2xl px-6 py-3">
+            <div class="flex items-center gap-3">
+                <div class="text-2xl font-extrabold tracking-tighter text-white">
+                    <span>ITAY / <span class="text-indigo-500">איתי</span></span>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center gap-8 font-medium">
+                <a href="#home" class="hover:text-indigo-400 transition text-sm">בית</a>
+                
+                <div class="dropdown">
+                    <a href="#work" onclick="showCategory('content')" class="hover:text-indigo-400 transition text-sm flex items-center gap-1">
+                        פרויקטים
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </a>
+                    <div class="dropdown-content">
+                        <div class="glass rounded-xl p-2 flex flex-col gap-1 border-indigo-500/20">
+                            <a href="#work" onclick="showCategory('content')" class="hover:bg-indigo-600/20 px-4 py-2 rounded-lg text-sm transition text-white">סרטוני תוכן</a>
+                            <a href="#work" onclick="showCategory('gaming')" class="hover:bg-indigo-600/20 px-4 py-2 rounded-lg text-sm transition text-white">גיימינג</a>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="#services" class="hover:text-indigo-400 transition text-sm">חבילות</a>
+                <a href="#faq" class="hover:text-indigo-400 transition text-sm">שאלות נפוצות</a>
+                
+                <a href="#contact" class="bg-indigo-600 hover:bg-indigo-700 px-5 py-2 rounded-xl transition text-white text-sm shadow-lg shadow-indigo-600/20">דברו איתי</a>
+            </div>
+            <div class="md:hidden text-xs font-bold text-indigo-400">תפריט</div>
+        </div>
+    </nav>
+
+    <!-- הירו -->
+    <section id="home" class="relative min-h-screen flex items-center justify-center hero-gradient pt-20">
+        <div class="absolute top-40 right-[10%] w-64 h-64 bg-indigo-600/20 blur-[100px] float-anim"></div>
+        <div class="max-w-5xl mx-auto px-6 text-center relative z-10">
+            <span class="inline-block py-1 px-4 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-sm mb-6 italic font-bold">עריכת וידאו מקצועית 2026</span>
+            <h1 class="text-6xl md:text-8xl font-extrabold mb-8 leading-[1.1]">
+                מספר את הסיפור <br/> <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-rose-400">בכל פורמט שתבחרו.</span>
+            </h1>
+            <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed font-light">
+                היי, אני איתי. עורך וידאו שמתמחה בתוכן ויראלי, סרטוני יוטיוב וגיימינג ברמה הגבוהה ביותר.
+            </p>
+            <div class="flex flex-col md:flex-row justify-center gap-6">
+                <a href="#work" onclick="showCategory('content')" class="group bg-white text-slate-900 px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-50 transition shadow-xl">
+                    צפו בעבודות שלי
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- גריד פרויקטים -->
+    <section id="work" class="py-32 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-8 text-center md:text-right">
+                <div>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-4 italic text-white">הפרויקטים שלי</h2>
+                    <p class="text-slate-400 font-light">בחרו קטגוריה כדי לראות את העבודות הרלוונטיות</p>
+                </div>
+                
+                <div class="glass p-1.5 rounded-2xl flex gap-2">
+                    <button onclick="showCategory('content')" class="tab-btn active px-6 py-2.5 rounded-xl font-bold transition duration-300 text-sm" id="btn-content">סרטוני תוכן</button>
+                    <button onclick="showCategory('gaming')" class="tab-btn px-6 py-2.5 rounded-xl font-bold transition duration-300 text-sm text-slate-400" id="btn-gaming">גיימינג</button>
+                </div>
+            </div>
+
+            <!-- קטגוריה: סרטוני תוכן -->
+            <div id="cat-content" class="tab-content active">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="glass p-3 rounded-[2.5rem] hover:scale-[1.02] transition">
+                        <div class="video-wrapper shorts-ratio">
+                            <iframe src="https://drive.google.com/file/d/1yLFmkwbvA_A_856Lg1gqe3ONlaQwnOZG/preview" allow="autoplay" allowfullscreen></iframe>
+                        </div>
+                        <div class="mt-4 pb-2 text-center italic font-bold text-indigo-300 font-mono text-sm">VIRAL SHORTS #1</div>
+                    </div>
+                    <div class="glass p-3 rounded-[2.5rem] hover:scale-[1.02] transition">
+                        <div class="video-wrapper shorts-ratio">
+                            <iframe src="https://drive.google.com/file/d/18WtgXHE1a9RhOF9WmPuP3qfMaxBtH93n/preview" allow="autoplay" allowfullscreen></iframe>
+                        </div>
+                        <div class="mt-4 pb-2 text-center italic font-bold text-indigo-300 font-mono text-sm">VIRAL SHORTS #2</div>
+                    </div>
+                    <div class="glass p-3 rounded-[2.5rem] hover:scale-[1.02] transition">
+                        <div class="video-wrapper shorts-ratio">
+                            <iframe src="https://drive.google.com/file/d/11bfETJ8If2Sn6pLYhZjY2v33R6mV0J0Y/preview" allow="autoplay" allowfullscreen></iframe>
+                        </div>
+                        <div class="mt-4 pb-2 text-center italic font-bold text-indigo-300 font-mono text-sm">VIRAL SHORTS #3</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- קטגוריה: גיימינג -->
+            <div id="cat-gaming" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 justify-center">
+                    <div class="glass p-3 rounded-[2.5rem] hover:scale-[1.02] transition border-cyan-500/20">
+                        <div class="video-wrapper shorts-ratio">
+                            <iframe src="https://drive.google.com/file/d/1ejwPBLvGb4ugeoVnVDR6CbhPRzn_4V4t/preview" allow="autoplay" allowfullscreen></iframe>
+                        </div>
+                        <div class="mt-4 pb-2 text-center italic font-bold text-cyan-400 font-mono text-sm">GAMING EDIT #1</div>
+                    </div>
+                    
+                    <div class="glass p-3 rounded-[2.5rem] border-dashed border-slate-700 flex flex-col items-center justify-center opacity-40 min-h-[300px]">
+                         <p class="text-slate-500 italic">Coming Soon...</p>
+                    </div>
+                    <div class="glass p-3 rounded-[2.5rem] border-dashed border-slate-700 flex flex-col items-center justify-center opacity-40 min-h-[300px]">
+                        <p class="text-slate-500 italic">Coming Soon...</p>
+                   </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- חבילות שירות -->
+    <section id="services" class="py-32 px-6 bg-slate-950/50">
+        <div class="max-w-7xl mx-auto text-center mb-16">
+            <h2 class="text-4xl font-bold mb-4 italic text-transparent bg-clip-text bg-gradient-to-l from-indigo-400 to-white">חבילות עריכה</h2>
+            <p class="text-slate-400 font-light">פתרונות מותאמים אישית לצרכים שלך</p>
+        </div>
+        
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="glass p-8 rounded-[2rem] border-slate-800 hover:border-indigo-500/30 transition flex flex-col">
+                <h3 class="text-xl font-bold mb-2 italic text-white">שורט / רילס בודד</h3>
+                <div class="text-4xl font-extrabold mb-4 text-white">₪70-100</div>
+                <p class="text-slate-400 text-sm mb-6">המחיר משתנה בהתאם לרמת המורכבות והאפקטים הנדרשים.</p>
+                <ul class="space-y-3 mb-8 text-slate-300 text-sm flex-grow">
+                    <li class="flex items-center gap-2">✓ עריכה מהירה ומקצועית</li>
+                    <li class="flex items-center gap-2">✓ כתוביות בסיסיות / מתקדמות</li>
+                    <li class="flex items-center gap-2">✓ אפקטים קוליים</li>
+                </ul>
+                <a href="https://wa.me/972549339459" target="_blank" class="block text-center w-full py-3 border border-slate-700 rounded-xl hover:bg-white hover:text-slate-950 transition font-bold text-sm">הזמן עכשיו</a>
+            </div>
+
+            <div class="glass p-8 rounded-[2rem] border-indigo-500/50 relative overflow-hidden flex flex-col shadow-2xl shadow-indigo-600/10 scale-105">
+                <div class="absolute top-0 right-0 bg-indigo-600 text-[10px] font-bold px-4 py-1 rounded-bl-xl uppercase tracking-tighter text-white">הכי משתלם</div>
+                <h3 class="text-2xl font-bold mb-2 italic leading-tight text-white">חבילת 3 סרטוני <br/> Shorts & Reels</h3>
+                <div class="text-5xl font-extrabold mb-6 text-white">₪200</div>
+                <ul class="space-y-4 mb-8 text-slate-300 text-md flex-grow font-light">
+                    <li class="flex items-center gap-2 italic">✓ כתוביות דינמיות וצבעוניות</li>
+                    <li class="flex items-center gap-2 italic">✓ עיצוב סאונד מלא</li>
+                    <li class="flex items-center gap-2 italic">✓ חיתוכים לשמירה על Retension</li>
+                    <li class="flex items-center gap-2 italic text-indigo-300">✓ פורמט ויראלי (9:16) מלא</li>
+                </ul>
+                <a href="https://wa.me/972549339459" target="_blank" class="block text-center w-full py-4 bg-indigo-600 rounded-2xl hover:bg-indigo-700 transition font-bold text-white shadow-lg shadow-indigo-600/20">סגור חבילה</a>
+            </div>
+
+            <div class="glass p-8 rounded-[2rem] border-slate-800 hover:border-indigo-500/30 transition flex flex-col">
+                <h3 class="text-xl font-bold mb-2 italic text-white">עריכת יוטיוב (ארוך)</h3>
+                <div class="text-4xl font-extrabold mb-4 text-white">החל מ-₪150</div>
+                <p class="text-slate-400 text-sm mb-6">סרטוני תוכן, גיימינג או ולוגים באורך מלא.</p>
+                <ul class="space-y-3 mb-8 text-slate-300 text-sm flex-grow">
+                    <li class="flex items-center gap-2">✓ בניית סיפור (Storytelling)</li>
+                    <li class="flex items-center gap-2">✓ תיקוני צבע וגרפיקה</li>
+                    <li class="flex items-center gap-2">✓ מוזיקה ללא זכויות יוצרים</li>
+                </ul>
+                <a href="#contact" class="block text-center w-full py-3 border border-slate-700 rounded-xl hover:bg-white hover:text-slate-950 transition font-bold text-sm">דברו איתי לפרטים</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- שאלות נפוצות -->
+    <section id="faq" class="py-32 px-6">
+        <div class="max-w-3xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-black mb-4 italic text-white">שאלות נפוצות</h2>
+                <div class="w-20 h-1 bg-indigo-600 mx-auto rounded-full"></div>
+            </div>
+
+            <div class="space-y-4">
+                <details class="faq-details group">
+                    <summary class="faq-summary glass p-6 rounded-2xl flex justify-between items-center faq-item">
+                        <span class="text-lg font-bold text-white">תוך כמה זמן הסרטון יהיה מוכן?</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 transition-transform duration-300 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </summary>
+                    <div class="px-6 py-4 text-slate-400 font-light leading-relaxed">
+                        סרטון "שורט" מוכן בדרך כלל תוך 2-3 ימי עסקים. סרטונים ארוכים (Long-form) לוקחים בין 3-5 ימים, תלוי במורכבות הפרויקט.
+                    </div>
+                </details>
+
+                <details class="faq-details group">
+                    <summary class="faq-summary glass p-6 rounded-2xl flex justify-between items-center faq-item">
+                        <span class="text-lg font-bold text-white">מה קורה אם ארצה לבצע תיקונים?</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 transition-transform duration-300 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </summary>
+                    <div class="px-6 py-4 text-slate-400 font-light leading-relaxed">
+                        השירות שלי כולל עד 2 סבבי תיקונים לכל סרטון. המטרה היא שתצאו מרוצים ב-100%, לכן אני קשוב לכל הערה ושינוי.
+                    </div>
+                </details>
+
+                <details class="faq-details group">
+                    <summary class="faq-summary glass p-6 rounded-2xl flex justify-between items-center faq-item">
+                        <span class="text-lg font-bold text-white">איך מתחילים את העבודה?</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 transition-transform duration-300 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </summary>
+                    <div class="px-6 py-4 text-slate-400 font-light leading-relaxed">
+                        פשוט שולחים לי הודעה בוואטסאפ או בדיסקורד. אנחנו עושים שיחת תיאום ציפיות קצרה, אתם שולחים את חומרי הגלם דרך Google Drive או WeTransfer, ואני מתחיל לעבוד!
+                    </div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- יצירת קשר -->
+    <section id="contact" class="py-32 px-6">
+        <div class="max-w-6xl mx-auto glass p-12 md:p-16 rounded-[3rem] text-center">
+            <h2 class="text-5xl font-extrabold mb-8 italic text-white">מוכנים להתחיל?</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+                <div class="glass p-6 rounded-3xl group hover:bg-indigo-600 transition">
+                    <p class="text-indigo-400 group-hover:text-white/80 font-bold uppercase tracking-widest text-[10px] mb-1">Discord</p>
+                    <p class="text-xl font-black group-hover:text-white font-mono">itay.pry</p>
+                </div>
+                <div class="glass p-6 rounded-3xl group instagram-bg transition">
+                    <p class="text-white/80 font-bold uppercase tracking-widest text-[10px] mb-1">Instagram</p>
+                    <a href="https://www.instagram.com/itaybachinsky/" target="_blank" class="text-xl font-black text-white font-mono">@itaybachinsky</a>
+                </div>
+                <div class="glass p-6 rounded-3xl group hover:bg-emerald-600 transition">
+                    <p class="text-emerald-400 group-hover:text-white/80 font-bold uppercase tracking-widest text-[10px] mb-1">WhatsApp</p>
+                    <a href="https://wa.me/972549339459" target="_blank" class="text-xl font-black group-hover:text-white font-mono">054-9339459</a>
+                </div>
+                <div class="glass p-6 rounded-3xl group hover:bg-rose-600 transition">
+                    <p class="text-rose-400 group-hover:text-white/80 font-bold uppercase tracking-widest text-[10px] mb-1">Email</p>
+                    <a href="mailto:pryitay@gmail.com" class="text-lg font-black group-hover:text-white break-all font-mono leading-tight">pryitay@gmail.com</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-12 border-t border-slate-800 text-slate-500 px-6">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-right">
+            <div class="text-xl font-bold text-white uppercase tracking-tighter">ITAY / <span class="text-indigo-500">איתי</span></div>
+            <div class="text-sm italic">"הופך חומרי גלם לסיפורים ויראליים"</div>
+            <div class="text-sm">© 2026 איתי | כל הזכויות שמורות.</div>
+        </div>
+    </footer>
+
+    <script>
+        // Disable ScrollReveal if user hates all animations, or keep only for initial load
+        ScrollReveal().reveal('.reveal', {
+            distance: '0px', // No movement
+            duration: 0, // No duration = instant
+            opacity: 1 // Instant opacity
+        });
+
+        function showCategory(type) {
+            // Instant visibility switch for categories
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.style.background = 'transparent';
+                btn.style.color = '#94a3b8';
+            });
+
+            const targetContent = document.getElementById('cat-' + type);
+            if(targetContent) {
+                targetContent.classList.add('active');
+            }
+            
+            const activeBtn = document.getElementById('btn-' + type);
+            if(activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.style.background = 'white';
+                activeBtn.style.color = '#020617';
+            }
+
+            // INSTANT JUMP to the work section (no smooth scroll)
+            const workSection = document.getElementById('work');
+            if(workSection) {
+                const offset = 80;
+                const elementPosition = workSection.getBoundingClientRect().top + window.pageYOffset;
+                const offsetPosition = elementPosition - offset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'auto' // Instant jump per request
+                });
+            }
+        }
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            const navInner = nav.querySelector('.max-w-7xl');
+            if (window.scrollY > 50) {
+                navInner.classList.add('bg-slate-900/90');
+            } else {
+                navInner.classList.remove('bg-slate-900/90');
+            }
+        });
+    </script>
+</body>
+</html>
